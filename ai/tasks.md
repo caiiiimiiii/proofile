@@ -3,11 +3,11 @@
 ## 阶段一：项目骨架（第1-2天）
 - [x] 初始化 Next.js + Tailwind
 - [x] 集成 Supabase（客户端和服务器端）
-- [ ] 创建数据库表（users, projects）
+- [x] 创建数据库表（users, projects）
 
 ## 阶段二：项目卡片系统（第3-5天）
 - [x] 实现项目列表页
-- [ ] 实现新建/编辑项目表单
+- [x] 实现新建/编辑项目表单
 - [ ] 实现删除项目
 ## 阶段二：核心功能开发（第1-7天）
 
@@ -25,9 +25,9 @@
 - [x] 编辑/删除按钮（先做 UI，功能后续）
 
 ### 第3天：新建项目
-- [ ] 新建项目页面 /projects/new
-- [ ] 表单字段：title, role, description, skills, result, date
-- [ ] 提交后存入 projects 表
+- [x] 新建项目页面 /projects/new
+- [x] 表单字段：title, role, description, skills, result, date
+- [x] 提交后存入 projects 表
 
 ### 第4天：编辑/删除项目
 - [ ] 编辑项目页面 /projects/[id]/edit
