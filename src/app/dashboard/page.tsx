@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type ViewState =
   | { type: "loading" }
@@ -95,11 +96,18 @@ export default function DashboardPage() {
           {state.type === "authed" ? (
             <div className="space-y-2">
               <div className="text-sm font-medium text-zinc-900">
-                下一步：实现项目卡片系统
+                下一步：项目卡片系统
               </div>
               <div className="text-sm text-zinc-600">
-                建议先做 <span className="font-medium">/projects</span> 列表 +
-                新建/编辑表单，然后接入 AI 简历生成。
+                先进入项目列表页创建项目卡片，再接入 AI 简历生成与能力雷达图。
+              </div>
+              <div className="pt-2">
+                <Link
+                  href="/projects"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                >
+                  进入项目列表
+                </Link>
               </div>
             </div>
           ) : null}
