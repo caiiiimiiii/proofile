@@ -9,6 +9,44 @@
 - [ ] 实现项目列表页
 - [ ] 实现新建/编辑项目表单
 - [ ] 实现删除项目
+## 阶段二：核心功能开发（第1-7天）
+
+### 第1天：登录系统
+- [ ] 登录页面（/login）
+  - 邮箱登录（Supabase Auth）
+  - 登录成功后跳转 /dashboard
+- [ ] 登出功能
+- [ ] 保护路由（未登录用户重定向到 /login）
+
+### 第2天：项目列表页
+- [ ] 创建 /projects 页面
+- [ ] 从 Supabase 读取当前用户项目
+- [ ] 项目卡片组件（展示 title, role, skills, date）
+- [ ] 编辑/删除按钮（先做 UI，功能后续）
+
+### 第3天：新建项目
+- [ ] 新建项目页面 /projects/new
+- [ ] 表单字段：title, role, description, skills, result, date
+- [ ] 提交后存入 projects 表
+
+### 第4天：编辑/删除项目
+- [ ] 编辑项目页面 /projects/[id]/edit
+- [ ] 删除项目功能（带确认弹窗）
+
+### 第5天：AI 简历生成
+- [ ] 创建 API 路由 /api/generate-resume
+- [ ] 调用 DeepSeek 生成简历
+- [ ] 简历展示页面 /resume
+
+### 第6天：能力雷达图
+- [ ] 雷达图组件（ECharts）
+- [ ] 根据项目数据生成维度评分
+- [ ] 在仪表盘展示
+
+### 第7天：UI 优化与联调
+- [ ] 美化所有页面
+- [ ] 修复 Bug
+- [ ] 准备演示 demo
 
 ## 阶段三：AI 简历生成（第6-8天）
 - [ ] 对接 DeepSeek API
