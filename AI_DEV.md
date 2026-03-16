@@ -1,4 +1,4 @@
-# AI 开发指南（给 Gemini 看的）
+# AI 开发指南（给 vibe-coding AI 看的）
 
 ## 项目背景
 - 项目名称：履迹（Proofile）
