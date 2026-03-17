@@ -4,10 +4,20 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { RadarChart } from "@/components/RadarChart";
+import { calcRadarScores, type RadarDimension } from "@/lib/radar";
+
+type Project = {
+  title?: string | null;
+  role?: string | null;
+  description?: string | null;
+  skills?: string[] | null;
+  result?: string | null;
+};
 
 type ViewState =
   | { type: "loading" }
-  | { type: "authed"; email: string | null }
+  | { type: "authed"; email: string | null; projects: Project[]; scores: RadarDimension[] }
   | { type: "unauthed" }
   | { type: "error"; message: string };
 
@@ -31,10 +41,23 @@ export default function DashboardPage() {
         return;
       }
 
-      setState({ type: "authed", email: data.session.user.email ?? null });
       if (typeof window !== "undefined" && window.location.hash) {
         router.replace("/dashboard");
       }
+
+      const { data: projects } = await supabase
+        .from("projects")
+        .select("title,role,description,skills,result");
+
+      if (cancelled) return;
+
+      const list = (projects ?? []) as Project[];
+      setState({
+        type: "authed",
+        email: data.session.user.email ?? null,
+        projects: list,
+        scores: calcRadarScores(list),
+      });
     }
 
     load();
@@ -44,8 +67,6 @@ export default function DashboardPage() {
       if (!session) {
         setState({ type: "unauthed" });
         router.replace("/login");
-      } else {
-        setState({ type: "authed", email: session.user.email ?? null });
       }
     });
 
@@ -82,44 +103,59 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
-          {state.type === "loading" ? (
-            <div className="text-sm text-zinc-600">加载中...</div>
-          ) : null}
+        <div className="mt-8 space-y-4">
+          {/* 能力雷达图 */}
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="text-sm font-medium text-zinc-900">能力雷达图</div>
+            {state.type === "loading" ? (
+              <div className="mt-4 text-sm text-zinc-500">加载中...</div>
+            ) : state.type === "authed" ? (
+              state.projects.length ? (
+                <>
+                  <RadarChart dimensions={state.scores} />
+                  <div className="mt-2 flex flex-wrap gap-3">
+                    {state.scores.map((d) => (
+                      <div key={d.name} className="text-xs text-zinc-500">
+                        {d.name}
+                        <span className="ml-1 font-medium text-zinc-900">{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="mt-4 text-sm text-zinc-500">
+                  暂无项目数据，先创建项目卡片以生成能力画像。
+                </div>
+              )
+            ) : null}
+          </div>
 
-          {state.type === "error" ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-              {state.message}
+          {/* 快捷入口 */}
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="text-sm font-medium text-zinc-900">项目卡片与 AI 简历</div>
+            <div className="mt-1 text-sm text-zinc-600">
+              先创建项目卡片，再用 AI 生成简历。
+              {state.type === "authed" && state.projects.length > 0
+                ? ` 当前共 ${state.projects.length} 个项目。`
+                : ""}
             </div>
-          ) : null}
-
-          {state.type === "authed" ? (
-            <div className="space-y-2">
-              <div className="text-sm font-medium text-zinc-900">
-                项目卡片与 AI 简历
-              </div>
-              <div className="text-sm text-zinc-600">
-                先创建项目卡片，再用 AI 生成简历。能力雷达图即将上线。
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Link
-                  href="/projects"
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-                >
-                  进入项目列表
-                </Link>
-                <Link
-                  href="/resume"
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-                >
-                  生成简历
-                </Link>
-              </div>
+            <div className="flex flex-wrap gap-2 pt-4">
+              <Link
+                href="/projects"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+              >
+                进入项目列表
+              </Link>
+              <Link
+                href="/resume"
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              >
+                生成简历
+              </Link>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -10,7 +10,7 @@
   - Next.js App Router + React + TypeScript（严格模式）
   - TailwindCSS（样式仅使用 Tailwind 类）
   - Supabase（PostgreSQL + Auth）
-  - ECharts（后续雷达图）
+  - ECharts（雷达图）
   - DeepSeek API（通过 OpenAI SDK 兼容方式）
 
 ## 2. 已实现功能清单（按迭代顺序）
@@ -77,6 +77,20 @@
   - 展示生成结果，支持打印/保存为 PDF
   - **代码**：`src/app/resume/page.tsx`
 
+### 2.6 能力雷达图
+
+- **工具函数**：`src/lib/radar.ts`
+  - `calcRadarScores(projects)` — 根据项目数据计算 5 个维度评分（0-100）
+  - 维度：技术能力（skills 数量）、团队协作、创新能力、科研能力（关键词匹配）、表达能力（字数）
+
+- **组件**：`RadarChart` — ECharts 雷达图，动态 import 避免 SSR，ResizeObserver 自适应
+  - **代码**：`src/components/RadarChart.tsx`
+
+- **页面**：`/dashboard` 集成雷达图
+  - 加载用户项目后计算评分，展示雷达图 + 各维度数值
+  - 无项目时展示引导提示
+  - **代码**：`src/app/dashboard/page.tsx`
+
 ## 3. 数据库（Supabase）落地情况
 
 - **表**：`public.profiles`（id, email, created_at）、`public.projects`（id, user_id, title/role/description/skills/result/date/created_at）
@@ -96,6 +110,5 @@ DEEPSEEK_MODEL（默认 deepseek-chat）
 
 ## 5. 当前已知的后续工作（未实现）
 
-- 能力雷达图（ECharts）+ 仪表盘聚合
 - UI 美化与端到端测试
 - 演示视频 + 终审 PPT
