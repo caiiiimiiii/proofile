@@ -96,17 +96,23 @@ export default function DashboardPage() {
           {state.type === "authed" ? (
             <div className="space-y-2">
               <div className="text-sm font-medium text-zinc-900">
-                下一步：项目卡片系统
+                项目卡片与 AI 简历
               </div>
               <div className="text-sm text-zinc-600">
-                先进入项目列表页创建项目卡片，再接入 AI 简历生成与能力雷达图。
+                先创建项目卡片，再用 AI 生成简历。能力雷达图即将上线。
               </div>
-              <div className="pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <Link
                   href="/projects"
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
                 >
                   进入项目列表
+                </Link>
+                <Link
+                  href="/resume"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                >
+                  生成简历
                 </Link>
               </div>
             </div>
