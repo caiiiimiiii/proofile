@@ -4,32 +4,28 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-function getOrigin() {
-  if (typeof window === "undefined") return "";
-  return window.location.origin;
-}
+type Status =
+  | { type: "idle" }
+  | { type: "sending" }
+  | { type: "error"; message: string };
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    | { type: "idle" }
-    | { type: "sending" }
-    | { type: "sent" }
-    | { type: "error"; message: string }
-  >({ type: "idle" });
+  const [password, setPassword] = useState("00000000");
+  const [status, setStatus] = useState<Status>({ type: "idle" });
 
   const emailTrimmed = useMemo(() => email.trim(), [email]);
 
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       const { data, error } = await supabase.auth.getSession();
-      if (cancelled) return;
-      if (error) return;
+      if (cancelled || error) return;
       if (data.session) router.replace("/dashboard");
     })();
+
     return () => {
       cancelled = true;
     };
@@ -37,21 +33,22 @@ export default function LoginPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     if (!emailTrimmed) {
       setStatus({ type: "error", message: "请输入邮箱。" });
       return;
     }
 
-    setStatus({ type: "sending" });
-    const origin = getOrigin();
+    if (!password.trim()) {
+      setStatus({ type: "error", message: "请输入密码。" });
+      return;
+    }
 
-    const { error } = await supabase.auth.signInWithOtp({
+    setStatus({ type: "sending" });
+
+    const { error } = await supabase.auth.signInWithPassword({
       email: emailTrimmed,
-      options: origin
-        ? {
-            emailRedirectTo: `${origin}/dashboard`,
-          }
-        : undefined,
+      password,
     });
 
     if (error) {
@@ -59,72 +56,124 @@ export default function LoginPage() {
       return;
     }
 
-    setStatus({ type: "sent" });
+    router.replace("/dashboard");
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-12">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
-              登录履迹
+    <main className="editorial-shell">
+      <section className="editorial-page">
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <article className="editorial-card p-8 md:p-10">
+            <div className="editorial-kicker">Ivory Editorial Login</div>
+            <h1 className="editorial-title mt-6 text-5xl leading-none tracking-tight text-[var(--foreground)] md:text-7xl">
+              把项目经历，
+              <br />
+              整理成一份真正有分量的职业档案。
             </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              输入邮箱，我们会发送一封 magic link 给你。
+            <p className="editorial-lead mt-6 max-w-2xl text-base md:text-lg">
+              Proofile 用项目卡片、能力图谱和 AI 简历生成，把零散经历重写成更适合投递、展示和表达的个人材料。
             </p>
-          </div>
 
-          <form className="space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-zinc-800"
-              >
-                邮箱
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={status.type === "sending"}
-                required
-              />
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="editorial-stat">
+                <span className="editorial-label">Project Ledger</span>
+                <strong className="editorial-stat-value">12</strong>
+                <p className="editorial-lead mt-2 text-sm">项目沉淀为结构化卡片，方便后续提炼。</p>
+              </div>
+              <div className="editorial-stat">
+                <span className="editorial-label">Resume Studio</span>
+                <strong className="editorial-stat-value">06</strong>
+                <p className="editorial-lead mt-2 text-sm">简历版本可迭代、可打印、可持续优化。</p>
+              </div>
+              <div className="editorial-stat">
+                <span className="editorial-label">Capability Map</span>
+                <strong className="editorial-stat-value">05</strong>
+                <p className="editorial-lead mt-2 text-sm">五维能力画像帮助你理解当前优势分布。</p>
+              </div>
             </div>
+          </article>
 
-            <button
-              type="submit"
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={status.type === "sending"}
-            >
-              {status.type === "sending" ? "发送中..." : "发送登录链接"}
-            </button>
+          <article className="editorial-card p-8 md:p-10">
+            <div className="editorial-label">Sign In</div>
+            <h2 className="editorial-title mt-3 text-4xl leading-none text-[var(--foreground)] md:text-5xl">
+              账号密码登录
+            </h2>
+            <p className="editorial-lead mt-4 text-base">
+              账号为邮箱。当前阶段不开放注册和修改密码，初始密码固定为
+              <span className="font-mono"> 00000000 </span>。
+            </p>
 
-            {status.type === "sent" ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-                已发送，请去邮箱点击登录链接。
+            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+              <div className="space-y-2">
+                <label htmlFor="email" className="editorial-label block">
+                  邮箱地址
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className="editorial-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={status.type === "sending"}
+                  required
+                />
               </div>
-            ) : null}
 
-            {status.type === "error" ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-                {status.message}
+              <div className="space-y-2">
+                <label htmlFor="password" className="editorial-label block">
+                  密码
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  className="editorial-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={status.type === "sending"}
+                  required
+                />
               </div>
-            ) : null}
-          </form>
 
-          <div className="mt-6 text-xs leading-5 text-zinc-500">
-            点击邮件中的链接后会自动跳转到仪表盘。
-          </div>
+              <button
+                type="submit"
+                className="editorial-button w-full"
+                disabled={status.type === "sending"}
+              >
+                {status.type === "sending" ? "登录中..." : "进入 Proofile"}
+              </button>
+
+              {status.type === "error" ? (
+                <div className="rounded-[22px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                  {status.message}
+                </div>
+              ) : null}
+            </form>
+
+            <div className="editorial-divider my-8"></div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="paper-panel p-4">
+                <div className="editorial-label">Current Mode</div>
+                <p className="editorial-lead mt-2 text-sm">
+                  现在只保留账号密码登录，去掉邮箱 magic link 登录流程，登录动作更直接。
+                </p>
+              </div>
+              <div className="paper-panel p-4">
+                <div className="editorial-label">Initial Password</div>
+                <p className="editorial-lead mt-2 text-sm">
+                  你已在 Supabase 中手动设置目标账号初始密码为 <span className="font-mono">00000000</span>。
+                </p>
+              </div>
+            </div>
+          </article>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
-

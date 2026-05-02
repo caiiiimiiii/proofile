@@ -26,14 +26,14 @@ type ViewState =
   | { type: "notFound" }
   | { type: "error"; message: string };
 
-function toFormValues(p: ProjectRow): ProjectFormValues {
+function toFormValues(project: ProjectRow): ProjectFormValues {
   return {
-    title: p.title ?? "",
-    role: p.role ?? "",
-    description: p.description ?? "",
-    skillsText: (p.skills ?? []).join(", "),
-    result: p.result ?? "",
-    date: p.date ?? "",
+    title: project.title ?? "",
+    role: project.role ?? "",
+    description: project.description ?? "",
+    skillsText: (project.skills ?? []).join(", "),
+    result: project.result ?? "",
+    date: project.date ?? "",
   };
 }
 
@@ -55,8 +55,12 @@ export default function EditProjectPage() {
     let cancelled = false;
 
     async function load() {
-      const { data: session } = await supabase.auth.getSession();
+      const { data: session, error: sessionError } = await supabase.auth.getSession();
       if (cancelled) return;
+      if (sessionError) {
+        setView({ type: "error", message: sessionError.message });
+        return;
+      }
       if (!session.session) {
         router.replace("/login");
         return;
@@ -77,7 +81,7 @@ export default function EditProjectPage() {
       setView({ type: "ready", project: project as ProjectRow });
     }
 
-    load();
+    void load();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
@@ -91,8 +95,7 @@ export default function EditProjectPage() {
   }, [id, router]);
 
   async function onSubmit(values: ProjectFormValues) {
-    if (view.type !== "ready") return;
-    if (busy) return;
+    if (view.type !== "ready" || busy) return;
 
     setSubmitError(null);
     setBusy(true);
@@ -115,8 +118,7 @@ export default function EditProjectPage() {
 
       router.replace("/projects");
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "保存失败，请稍后重试。";
+      const message = e instanceof Error ? e.message : "保存失败，请稍后重试。";
       setSubmitError(message);
     } finally {
       setBusy(false);
@@ -124,50 +126,49 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto w-full max-w-3xl px-6 py-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="text-sm text-zinc-500">项目卡片</div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900">
-              编辑项目
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              修改项目信息，保存后将同步到简历与能力画像。
-            </p>
-          </div>
+    <main className="editorial-shell">
+      <section className="editorial-page space-y-6">
+        <article className="editorial-card p-8 md:p-10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="editorial-kicker">Edit Entry</div>
+              <h1 className="editorial-title mt-5 text-5xl leading-none tracking-tight text-[var(--foreground)] md:text-7xl">
+                修改项目条目，
+                <br />
+                让叙事更完整也更干净。
+              </h1>
+              <p className="editorial-lead mt-5 max-w-3xl text-base md:text-lg">
+                编辑后的内容会直接影响项目列表展示、能力图谱分析，以及 AI 简历的最终输出质量。
+              </p>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/projects"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-            >
-              返回列表
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/projects" className="editorial-button-secondary">
+                返回列表
+              </Link>
+            </div>
           </div>
-        </div>
+        </article>
 
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="editorial-card p-8 md:p-10">
           {view.type === "loading" ? (
-            <div className="text-sm text-zinc-600">加载中...</div>
+            <div className="editorial-lead text-sm">正在加载项目内容...</div>
           ) : null}
 
           {view.type === "notFound" ? (
-            <div className="space-y-4">
-              <div className="text-sm font-medium text-zinc-900">
-                项目不存在或无权编辑
-              </div>
-              <Link
-                href="/projects"
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-              >
+            <div className="space-y-5">
+              <div className="editorial-label">Not Found</div>
+              <h2 className="editorial-title text-4xl leading-none text-[var(--foreground)]">
+                项目不存在，或你没有编辑权限。
+              </h2>
+              <Link href="/projects" className="editorial-button w-fit">
                 返回项目列表
               </Link>
             </div>
           ) : null}
 
           {view.type === "error" ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+            <div className="rounded-[22px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
               {view.message}
             </div>
           ) : null}
@@ -182,8 +183,8 @@ export default function EditProjectPage() {
               errorMessage={submitError}
             />
           ) : null}
-        </div>
-      </div>
-    </div>
+        </section>
+      </section>
+    </main>
   );
 }

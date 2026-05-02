@@ -25,8 +25,7 @@ export default function ProjectsPage() {
     let cancelled = false;
 
     async function load() {
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (cancelled) return;
       if (sessionError) {
         setState({ type: "error", message: sessionError.message });
@@ -38,7 +37,6 @@ export default function ProjectsPage() {
       }
 
       const user = sessionData.session.user;
-
       const { data: projects, error: projectsError } = await supabase
         .from("projects")
         .select("id,title,role,skills,date")
@@ -57,7 +55,7 @@ export default function ProjectsPage() {
       });
     }
 
-    load();
+    void load();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
@@ -88,119 +86,119 @@ export default function ProjectsPage() {
       if (prev.type !== "ready") return prev;
       return {
         ...prev,
-        projects: prev.projects.filter((p) => p.id !== id),
+        projects: prev.projects.filter((project) => project.id !== id),
       };
     });
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto w-full max-w-5xl px-6 py-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="text-sm text-zinc-500">项目卡片</div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900">
-              我的项目
-            </h1>
-            {state.type === "ready" ? (
-              <p className="mt-1 text-sm text-zinc-600">
-                {state.email ? `已登录：${state.email} · ` : ""}
-                共 {projectCount} 个项目
+    <main className="editorial-shell">
+      <section className="editorial-page space-y-6">
+        <article className="editorial-card p-8 md:p-10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="editorial-kicker">Project Ledger</div>
+              <h1 className="editorial-title mt-5 text-5xl leading-none tracking-tight text-[var(--foreground)] md:text-7xl">
+                我的项目条目，
+                <br />
+                也是我的职业素材库。
+              </h1>
+              <p className="editorial-lead mt-5 max-w-3xl text-base md:text-lg">
+                {state.type === "ready"
+                  ? `${state.email ? `当前登录邮箱：${state.email}。` : ""} 这里展示全部项目卡片，你可以继续补全细节、编辑表述，或者删除无效条目。`
+                  : "正在读取你的项目资产库。"}
               </p>
-            ) : (
-              <p className="mt-1 text-sm text-zinc-600">正在加载...</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-            >
-              返回仪表盘
-            </Link>
-            <Link
-              href="/projects/new"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-            >
-              新建项目
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          {state.type === "loading" ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-              加载中...
             </div>
-          ) : null}
 
-          {state.type === "error" ? (
-            <div className="space-y-3 rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">
+            <div className="flex flex-wrap gap-3">
+              <Link href="/dashboard" className="editorial-button-secondary">
+                返回仪表盘
+              </Link>
+              <Link href="/projects/new" className="editorial-button">
+                新建项目
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="editorial-stat">
+              <span className="editorial-label">Entries</span>
+              <strong className="editorial-stat-value">{projectCount}</strong>
+              <p className="editorial-lead mt-2 text-sm">当前项目总数。</p>
+            </div>
+            <div className="editorial-stat">
+              <span className="editorial-label">Action</span>
+              <strong className="editorial-stat-value">Edit</strong>
+              <p className="editorial-lead mt-2 text-sm">对单个条目进行精修和补充。</p>
+            </div>
+            <div className="editorial-stat">
+              <span className="editorial-label">Goal</span>
+              <strong className="editorial-stat-value">Resume</strong>
+              <p className="editorial-lead mt-2 text-sm">为后续 AI 简历提供高质量输入。</p>
+            </div>
+          </div>
+        </article>
+
+        {state.type === "loading" ? (
+          <section className="editorial-card p-8">
+            <div className="editorial-lead text-sm">正在加载项目列表...</div>
+          </section>
+        ) : null}
+
+        {state.type === "error" ? (
+          <section className="editorial-card p-8">
+            <div className="rounded-[24px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900">
               <div className="font-medium">加载项目失败</div>
-              <div className="break-words">{state.message}</div>
+              <div className="mt-2 break-words">{state.message}</div>
               {state.message.includes("Could not find the table") ||
               state.message.includes("schema cache") ? (
-                <div className="rounded-xl border border-red-200 bg-white/70 px-3 py-2 text-xs leading-5 text-red-900">
+                <div className="mt-4 space-y-2 rounded-[22px] border border-red-200 bg-white/70 px-4 py-3 text-xs leading-5 text-red-900">
                   <div className="font-medium">大概率原因</div>
                   <div>
-                    你还没有在 Supabase 数据库里创建{" "}
-                    <span className="font-mono">public.projects</span>{" "}
-                    表，或创建后 API 的 schema cache 还没刷新。
+                    你还没有在 Supabase 数据库里创建 <span className="font-mono">public.projects</span>
+                    表，或者创建后 API 的 schema cache 还没有刷新。
                   </div>
-                  <div className="mt-2 font-medium">修复方式</div>
-                  <div>
-                    1) 打开 Supabase Dashboard → SQL Editor，执行仓库里的{" "}
-                    <span className="font-mono">database/schema.sql</span>
-                  </div>
-                  <div>
-                    2) 然后在 Supabase Dashboard 的 API 设置里点击{" "}
-                    <span className="font-medium">Reload schema</span>{" "}
-                    （或重启 API）
-                  </div>
-                  <div>3) 刷新本页面重试</div>
+                  <div className="font-medium">修复方式</div>
+                  <div>1) 在 Supabase Dashboard 的 SQL Editor 执行 `database/schema.sql`</div>
+                  <div>2) 在 API 设置里点击 `Reload schema` 或重启 API</div>
+                  <div>3) 回到当前页面重新加载</div>
                 </div>
               ) : null}
             </div>
-          ) : null}
-
-          {state.type === "ready" ? (
-            state.projects.length ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {state.projects.map((p) => (
-                  <ProjectCard
-                    key={p.id}
-                    project={p}
-                    onDelete={deletingId ? undefined : deleteProject}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-zinc-200 bg-white p-10 text-center">
-                <div className="text-base font-semibold text-zinc-900">
-                  还没有项目
-                </div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  先创建第一个项目卡片，用来生成简历与能力画像。
-                </div>
-                <div className="mt-6">
-                  <Link
-                    href="/projects/new"
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-                  >
-                    新建项目
-                  </Link>
-                </div>
-              </div>
-            )
-          ) : null}
-        </div>
-
-        {deletingId ? (
-          <div className="mt-4 text-xs text-zinc-500">正在删除...</div>
+          </section>
         ) : null}
-      </div>
-    </div>
+
+        {state.type === "ready" ? (
+          state.projects.length ? (
+            <section className="grid gap-5 lg:grid-cols-2">
+              {state.projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onDelete={deletingId ? undefined : deleteProject}
+                />
+              ))}
+            </section>
+          ) : (
+            <section className="editorial-card p-10 text-center">
+              <div className="editorial-label">Blank Portfolio</div>
+              <h2 className="editorial-title mt-4 text-4xl leading-none text-[var(--foreground)]">
+                还没有项目条目。
+              </h2>
+              <p className="editorial-lead mx-auto mt-4 max-w-xl text-base">
+                从第一条项目卡片开始，把做过的事组织成可复用、可提炼、可投递的履历材料。
+              </p>
+              <div className="mt-8">
+                <Link href="/projects/new" className="editorial-button">
+                  新建项目
+                </Link>
+              </div>
+            </section>
+          )
+        ) : null}
+
+        {deletingId ? <div className="editorial-lead px-1 text-xs">正在删除项目...</div> : null}
+      </section>
+    </main>
   );
 }
-

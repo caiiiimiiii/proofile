@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { parseSkills, ProjectForm, type ProjectFormValues } from "@/components/ProjectForm";
+import {
+  parseSkills,
+  ProjectForm,
+  type ProjectFormValues,
+} from "@/components/ProjectForm";
 
 type ViewState =
   | { type: "loading" }
@@ -39,7 +43,7 @@ export default function NewProjectPage() {
       });
     }
 
-    load();
+    void load();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
@@ -60,8 +64,7 @@ export default function NewProjectPage() {
   }
 
   async function onSubmit(values: ProjectFormValues) {
-    if (view.type !== "ready") return;
-    if (busy) return;
+    if (view.type !== "ready" || busy) return;
 
     setSubmitError(null);
     setBusy(true);
@@ -92,58 +95,84 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto w-full max-w-3xl px-6 py-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="text-sm text-zinc-500">项目卡片</div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900">
-              新建项目
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              填写关键信息，后续可用于生成简历与能力画像。
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/projects"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
-            >
-              返回列表
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          {view.type === "loading" ? (
-            <div className="text-sm text-zinc-600">加载中...</div>
-          ) : null}
-
-          {view.type === "error" ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-              {view.message}
+    <main className="editorial-shell">
+      <section className="editorial-page space-y-6">
+        <article className="editorial-card p-8 md:p-10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="editorial-kicker">New Entry</div>
+              <h1 className="editorial-title mt-5 text-5xl leading-none tracking-tight text-[var(--foreground)] md:text-7xl">
+                先把事实写清楚，
+                <br />
+                再让表达变得更高级。
+              </h1>
+              <p className="editorial-lead mt-5 max-w-3xl text-base md:text-lg">
+                项目名称、角色、过程、技能和成果越清楚，后续 AI 简历输出就越接近真实可投递材料。
+              </p>
             </div>
-          ) : null}
 
-          {view.type === "ready" ? (
-            <ProjectForm
-              submitLabel="创建项目"
-              onSubmit={onSubmit}
-              busy={busy}
-              errorMessage={submitError}
-            />
-          ) : null}
-        </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/projects" className="editorial-button-secondary">
+                返回列表
+              </Link>
+            </div>
+          </div>
+        </article>
 
-        <div className="mt-6 text-xs leading-5 text-zinc-500">
-          若创建时报错提示 <span className="font-mono">profiles</span>{" "}
-          或权限问题，请确认已在 Supabase 执行{" "}
-          <span className="font-mono">database/schema.sql</span>，并应用了最新的
-          profiles 策略。
-        </div>
-      </div>
-    </div>
+        <section className="editorial-card p-8 md:p-10">
+          <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
+            <article>
+              <div className="editorial-label">Writing Notes</div>
+              <h2 className="editorial-title mt-3 text-4xl leading-none text-[var(--foreground)]">
+                一条好的项目卡片，
+                <br />
+                要同时回答三个问题。
+              </h2>
+              <div className="mt-6 space-y-4">
+                <div className="paper-panel p-4">
+                  <div className="editorial-label">What</div>
+                  <p className="editorial-lead mt-2 text-sm">这个项目是什么，你的角色是什么。</p>
+                </div>
+                <div className="paper-panel p-4">
+                  <div className="editorial-label">How</div>
+                  <p className="editorial-lead mt-2 text-sm">你具体做了哪些设计、开发或协作工作。</p>
+                </div>
+                <div className="paper-panel p-4">
+                  <div className="editorial-label">Result</div>
+                  <p className="editorial-lead mt-2 text-sm">这件事最终带来了什么结果、影响或指标变化。</p>
+                </div>
+              </div>
+            </article>
+
+            <article>
+              {view.type === "loading" ? (
+                <div className="editorial-lead text-sm">正在加载表单...</div>
+              ) : null}
+
+              {view.type === "error" ? (
+                <div className="rounded-[22px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                  {view.message}
+                </div>
+              ) : null}
+
+              {view.type === "ready" ? (
+                <ProjectForm
+                  submitLabel="创建项目"
+                  onSubmit={onSubmit}
+                  busy={busy}
+                  errorMessage={submitError}
+                />
+              ) : null}
+            </article>
+          </div>
+        </section>
+
+        <section className="px-1 text-xs leading-6 text-[var(--muted)]">
+          如果创建时提示 <span className="font-mono">profiles</span> 表或权限有问题，请先在 Supabase 执行
+          <span className="font-mono"> database/schema.sql </span>
+          并确认最新策略已经生效。
+        </section>
+      </section>
+    </main>
   );
 }
-

@@ -14,40 +14,61 @@ export function RadarChart({ dimensions }: Props) {
     if (!ref.current || !dimensions.length) return;
 
     let chart: import("echarts").ECharts | null = null;
+    let disposed = false;
 
-    import("echarts").then((echarts) => {
-      if (!ref.current) return;
+    void import("echarts").then((echarts) => {
+      if (!ref.current || disposed) return;
+
       chart = echarts.init(ref.current);
-
       chart.setOption({
         radar: {
-          indicator: dimensions.map((d) => ({ name: d.name, max: 100 })),
+          indicator: dimensions.map((dimension) => ({
+            name: dimension.name,
+            max: 100,
+          })),
           radius: "65%",
-          axisName: { color: "#52525b", fontSize: 12 },
-          splitLine: { lineStyle: { color: "#e4e4e7" } },
-          splitArea: { show: false },
-          axisLine: { lineStyle: { color: "#e4e4e7" } },
+          axisName: {
+            color: "#6f6256",
+            fontSize: 12,
+            fontFamily: "Trebuchet MS, Aptos, Segoe UI, sans-serif",
+          },
+          splitLine: { lineStyle: { color: "rgba(36, 29, 24, 0.12)" } },
+          splitArea: {
+            areaStyle: {
+              color: [
+                "rgba(145, 87, 66, 0.02)",
+                "rgba(70, 87, 75, 0.02)",
+              ],
+            },
+          },
+          axisLine: { lineStyle: { color: "rgba(36, 29, 24, 0.12)" } },
         },
         series: [
           {
             type: "radar",
             data: [
               {
-                value: dimensions.map((d) => d.value),
+                value: dimensions.map((dimension) => dimension.value),
                 name: "能力评分",
-                areaStyle: { color: "rgba(24,24,27,0.08)" },
-                lineStyle: { color: "#18181b", width: 2 },
-                itemStyle: { color: "#18181b" },
+                areaStyle: { color: "rgba(145, 87, 66, 0.16)" },
+                lineStyle: { color: "#915742", width: 2 },
+                itemStyle: { color: "#46574b" },
               },
             ],
           },
         ],
         tooltip: {
           trigger: "item",
+          backgroundColor: "rgba(255, 250, 244, 0.96)",
+          borderColor: "rgba(36, 29, 24, 0.12)",
+          textStyle: {
+            color: "#241d18",
+            fontFamily: "Trebuchet MS, Aptos, Segoe UI, sans-serif",
+          },
           formatter: (params: unknown) => {
-            const p = params as { value: number[] };
+            const current = params as { value: number[] };
             return dimensions
-              .map((d, i) => `${d.name}：${p.value[i]}`)
+              .map((dimension, index) => `${dimension.name}：${current.value[index]}`)
               .join("<br/>");
           },
         },
@@ -58,10 +79,11 @@ export function RadarChart({ dimensions }: Props) {
     observer.observe(ref.current);
 
     return () => {
+      disposed = true;
       observer.disconnect();
       chart?.dispose();
     };
   }, [dimensions]);
 
-  return <div ref={ref} className="h-64 w-full" />;
+  return <div ref={ref} className="h-72 w-full" />;
 }
