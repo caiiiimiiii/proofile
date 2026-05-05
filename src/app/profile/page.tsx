@@ -154,7 +154,6 @@ export default function ProfilePage() {
               <div className="editorial-kicker">Resume Profile</div>
               <h1 className="editorial-title mt-5 text-5xl leading-none tracking-tight text-[var(--foreground)] md:text-7xl">
                 完善你的基础资料！
-
               </h1>
               <p className="editorial-lead mt-5 max-w-3xl text-base md:text-lg">
                 你只需要补齐姓名、联系方式、教育背景和手动奖项。项目经历、实习经历、自我评价都会由已有项目卡片自动提炼生成。
